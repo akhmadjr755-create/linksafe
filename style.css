@@ -1,0 +1,390 @@
+/* === VARIABEL WARNA === */
+:root {
+    --bg-base: #0a1428; 
+    --bg-panel: rgba(13, 25, 48, 0.75); 
+    --border-color: rgba(0, 229, 255, 0.3);
+    --border-hover: rgba(0, 229, 255, 0.8);
+    
+    --text-main: #F1F5F9;
+    --text-muted: #94A3B8;
+    --cyan: #00e5ff;
+    --violet: #7c3aed;
+    
+    --safe: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    
+    --font-mono: 'Fira Code', 'Courier New', Courier, ui-monospace, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-mono);
+    color: var(--text-main);
+    min-height: 100svh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    position: relative;
+    overflow-x: hidden;
+    /* Background body dihilangkan, dipindah ke .bg-gradient */
+}
+
+/* ========================================= */
+/* LAYER BACKGROUND (Z-INDEX DIPERBAIKI)     */
+/* ========================================= */
+
+/* Layer 1: Gradasi Biru Malam */
+.bg-gradient {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(59, 54, 184, 0.15) 0%, transparent 60%),
+        linear-gradient(180deg, #06101f 0%, #0a1428 100%);
+}
+
+/* Layer 2: Grid Tipis Cyan */
+.cyber-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    background-image: 
+        linear-gradient(rgba(0, 229, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+    -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+}
+
+/* Layer 3: Grid 3D (Disembunyikan di HP) */
+.floor-container { display: none; }
+
+/* Layer 4: Logo Raksasa */
+.bg-giant-logo {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 3; 
+    pointer-events: none;
+}
+.bg-giant-logo svg {
+    width: 90vmin; height: 90vmin;
+    opacity: 0.12; fill: transparent;
+    stroke: var(--cyan); stroke-width: 1.5;
+    animation: floatLogo 6s infinite alternate ease-in-out;
+}
+@keyframes floatLogo {
+    0% { transform: scale(0.95) rotate(-2deg); opacity: 0.08; }
+    100% { transform: scale(1.05) rotate(2deg); opacity: 0.15; }
+}
+.bg-giant-logo::before, .bg-giant-logo::after {
+    content: ''; position: absolute;
+    width: 50vmin; height: 50vmin;
+    border-radius: 50%; border: 2px solid var(--cyan); opacity: 0;
+    animation: ripple 5s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+.bg-giant-logo::after { animation-delay: 2.5s; }
+@keyframes ripple {
+    0% { transform: scale(0.3); opacity: 0; }
+    20% { opacity: 0.2; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Layer 5: Konten Utama */
+.app-container {
+    width: 100%;
+    max-width: 580px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    z-index: 10; /* Di paling atas */
+}
+
+/* === HEADER & LOGO KECIL === */
+.app-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo-wrapper {
+    position: relative; width: 48px; height: 48px;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden; border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    border: 1px solid var(--cyan);
+}
+.logo-svg { width: 100%; height: 100%; }
+.logo-wrapper::after {
+    content: '';
+    position: absolute; top: -50%; left: -100%; width: 50%; height: 200%;
+    background: linear-gradient(to right, transparent, rgba(0, 229, 255, 0.6), transparent);
+    transform: rotate(25deg); animation: shine 4s infinite;
+}
+@keyframes shine {
+    0% { left: -100%; opacity: 0; } 15% { opacity: 1; }
+    30% { left: 150%; opacity: 0; } 100% { left: 150%; opacity: 0; }
+}
+.brand h1 {
+    font-size: 2.2rem; letter-spacing: 1px; font-weight: 700;
+    font-family: var(--font-mono); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+.brand h1 span { color: var(--cyan); }
+.tagline { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 0.5px; }
+
+/* === KARTU === */
+.glass-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color); border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative; transition: all 0.3s ease;
+}
+.glass-panel:hover { 
+    border-color: var(--border-hover);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.panel-header {
+    background: rgba(0, 0, 0, 0.3); padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.red { background-color: #FF5F56; box-shadow: 0 0 8px #FF5F56; }
+.dot.yellow { background-color: #FFBD2E; box-shadow: 0 0 8px #FFBD2E; }
+.dot.green { background-color: #27C93F; box-shadow: 0 0 8px #27C93F; }
+.panel-title {
+    margin-left: auto; font-size: 0.75rem; color: var(--cyan);
+    letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+}
+.panel-body { padding: 28px; }
+.input-group { margin-bottom: 24px; }
+.input-group label {
+    display: block; margin-bottom: 10px; font-size: 0.85rem;
+    color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; font-weight: bold;
+}
+.input-wrapper {
+    display: flex; align-items: center;
+    background: rgba(10, 20, 40, 0.8); border: 1px solid var(--cyan);
+    border-radius: 8px; padding: 0 16px; transition: all 0.3s ease;
+    box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.05);
+}
+.input-wrapper:focus-within {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.1);
+    background: rgba(10, 20, 40, 0.9);
+}
+.prefix { color: var(--cyan); font-size: 0.9rem; margin-right: 8px; opacity: 0.8; }
+input {
+    width: 100%; padding: 16px 0; background: transparent; border: none;
+    color: #FFFFFF; font-size: 1rem; font-family: inherit;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+input:focus { outline: none; }
+input::placeholder { color: rgba(0, 229, 255, 0.3); }
+
+button {
+    width: 100%; padding: 16px; background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--cyan); color: var(--cyan);
+    font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px;
+    cursor: pointer; border-radius: 8px; transition: all 0.3s ease;
+    position: relative; overflow: hidden; font-family: inherit;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+button:hover { background: rgba(0, 229, 255, 0.2); box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
+.scan-line {
+    position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.6), transparent);
+    transform: skewX(-20deg); animation: scanLine 2.5s linear infinite; pointer-events: none;
+}
+@keyframes scanLine {
+    0% { left: -100%; opacity: 0; } 10% { opacity: 1; }
+    90% { opacity: 1; } 100% { left: 100%; opacity: 0; }
+}
+
+/* === HASIL SCAN === */
+.result-hidden { display: none; opacity: 0; }
+.result-visible { display: block; opacity: 1; transition: opacity 0.3s ease; }
+.result-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2);
+}
+.result-header h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--cyan); }
+#risk-badge { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.badge-safe { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #34D399; box-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
+.badge-warning { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid #FBBF24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
+.badge-danger { background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid #F87171; box-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
+#reason-list { list-style: none; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+#reason-list li { font-size: 0.9rem; line-height: 1.5; display: flex; align-items: flex-start; color: var(--text-main); }
+#reason-list li::before { content: '>'; color: var(--cyan); margin-right: 12px; font-weight: bold; text-shadow: 0 0 5px var(--cyan); }
+.disclaimer {
+    margin: 0 24px 24px 24px; padding: 16px; background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px;
+    display: flex; gap: 12px; align-items: flex-start;
+}
+.disclaimer .icon { font-size: 1.2rem; }
+.disclaimer p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.app-footer { text-align: center; color: var(--text-muted); font-size: 0.8rem; opacity: 0.8; }
+@keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+#risk-badge.badge-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+@media (min-width: 768px) {
+    .app-container { max-width: 640px; }
+    .panel-body { padding: 36px; }
+    .brand h1 { font-size: 2.8rem; }
+    .tagline { font-size: 1rem; }
+}
+
+/* ========================================= */
+/* KHUSUS DESKTOP/LAPTOP (Min-width 1024)    */
+/* ========================================= */
+@media (min-width: 1024px) {
+    .app-container { max-width: 680px; gap: 32px; }
+
+    /* Nyalakan Container Grid 3D */
+    .floor-container {
+        display: block;
+        position: fixed;
+        bottom: 0; left: 0;
+        width: 100vw; height: 75vh;
+        perspective: 500px;
+        z-index: 2; /* Di atas bg gradient (1), di bawah logo raksasa (3) */
+        overflow: hidden;
+        mask-image: linear-gradient(to top, black 60%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to top, black 60%, transparent 100%);
+    }
+
+    /* Grid Dasar */
+    .floor-grid {
+        position: absolute; inset: -100% 0 0 0;
+        background-image: 
+            repeating-linear-gradient(rgba(0, 229, 255, 0.2) 0px, rgba(0, 229, 255, 0.2) 2px, transparent 2px, transparent 60px),
+            repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.2) 0px, rgba(0, 229, 255, 0.2) 2px, transparent 2px, transparent 60px);
+        transform: rotateX(65deg);
+        transform-origin: top center;
+        animation: gridMove 2s linear infinite;
+    }
+
+    /* Gelombang Cahaya (Pita Horizontal) */
+    .floor-wave {
+        position: absolute; inset: -100% 0 0 0;
+        /* Warna cyan terang */
+        background: linear-gradient(to bottom, 
+            transparent 0%, 
+            rgba(0, 229, 255, 0.4) 40%, 
+            rgba(0, 229, 255, 0.6) 50%, 
+            rgba(0, 229, 255, 0.4) 60%, 
+            transparent 100%);
+        transform: rotateX(65deg);
+        transform-origin: top center;
+        /* Masking agar berbentuk pita */
+        -webkit-mask-image: linear-gradient(to bottom, transparent 30%, black 50%, transparent 70%);
+        mask-image: linear-gradient(to bottom, transparent 30%, black 50%, transparent 70%);
+        animation: waveSweep 3s ease-in-out infinite, gridMove 2s linear infinite;
+        opacity: 0.8;
+    }
+
+    @keyframes gridMove {
+        0% { background-position: 0 0; }
+        100% { background-position: 0 60px; }
+    }
+
+    @keyframes waveSweep {
+        0% { -webkit-mask-position: 0% -50%; mask-position: 0% -50%; }
+        100% { -webkit-mask-position: 0% 150%; mask-position: 0% 150%; }
+    }
+}
+
+/* === HORMATI PREFERS-REDUCED-MOTION === */
+@media (prefers-reduced-motion: reduce) {
+    .floor-grid, .floor-wave, 
+    .bg-giant-logo svg, .bg-giant-logo::before, .bg-giant-logo::after, 
+    .logo-wrapper::after, .scan-line, #risk-badge.badge-pop {
+        animation: none !important;
+    }
+    .result-visible { transition: none !important; }
+}
+/* ===================================================== */
+/* GRID GELOMBANG — KHUSUS DESKTOP (1024px ke atas)       */
+/* Di bawah 1024px: disembunyikan total, tampilan HP tetap sama persis */
+/* ===================================================== */
+
+.floor-container {
+  display: none; /* default: sembunyi di HP */
+}
+
+@media (min-width: 1024px) {
+
+  .floor-container {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 75vh;
+    perspective: 600px;
+    overflow: hidden;
+    z-index: -2;
+    pointer-events: none;
+    mask-image: linear-gradient(to top, black 35%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 35%, transparent 100%);
+  }
+
+  /* Lapisan dasar grid, redup, selalu terlihat */
+  .floor-grid {
+    position: absolute;
+    inset: -150% 0 0 0;
+    background-image:
+      repeating-linear-gradient(rgba(0, 229, 255, 0.12) 0px, rgba(0, 229, 255, 0.12) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.12) 0px, rgba(0, 229, 255, 0.12) 1px, transparent 1px, transparent 48px);
+    transform: rotateX(62deg);
+    transform-origin: top center;
+    animation: floorScroll 6s linear infinite;
+  }
+
+  /* 3 lapisan "gelombang cahaya" — tiap lapisan grid sama,
+     tapi diberi topeng (mask) elips yang posisinya digerakkan.
+     Area yang kena topeng jadi lebih terang, sisanya redup —
+     karena topengnya bergerak terus, hasilnya terlihat seperti
+     gelombang terang yang merambat di permukaan grid. */
+  .floor-wave {
+    position: absolute;
+    inset: -150% 0 0 0;
+    background-image:
+      repeating-linear-gradient(rgba(0, 229, 255, 0.9) 0px, rgba(0, 229, 255, 0.9) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.9) 0px, rgba(0, 229, 255, 0.9) 1px, transparent 1px, transparent 48px);
+    transform: rotateX(62deg);
+    transform-origin: top center;
+    mask-image: radial-gradient(ellipse 70% 10% at 50% 0%, black 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 10% at 50% 0%, black 0%, transparent 70%);
+    animation: floorScroll 6s linear infinite, waveTravel 5s ease-in-out infinite;
+  }
+
+  .floor-wave-a { animation-delay: 0s, 0s; }
+  .floor-wave-b { animation-delay: 0s, 1.7s; }
+  .floor-wave-c { animation-delay: 0s, 3.3s; }
+
+  @keyframes floorScroll {
+    0%   { background-position: 0 0, 0 0; }
+    100% { background-position: 0 48px, 48px 0; }
+  }
+
+  @keyframes waveTravel {
+    0%   { mask-position: 50% 0%;   -webkit-mask-position: 50% 0%; }
+    50%  { mask-position: 50% 60%;  -webkit-mask-position: 50% 60%; }
+    100% { mask-position: 50% 100%; -webkit-mask-position: 50% 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .floor-grid,
+    .floor-wave {
+      animation: none !important;
+    }
+  }
+}
