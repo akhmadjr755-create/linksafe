@@ -1,8 +1,12 @@
 // api/scan.js
 // LinkSafe Backend - Penggabungan Safe Browsing & VirusTotal
+// Perubahan tahap 1:
+//  - ID URL VirusTotal memakai base64url (sesuai aturan VirusTotal)
+//  - VirusTotal 404 (URL belum pernah dianalisis) TIDAK dianggap "bersih"; dicatat di sources_nodata
+//  - Kalau skor rendah tapi ada sumber tanpa data -> label "tidak_diketahui", bukan "aman"
 
-const createResponse = (url, risk, score, reasons, sources_checked = [], sources_failed = []) => {
-    return { url: url || "", risk, score, reasons, sources_checked, sources_failed };
+const createResponse = (url, risk, score, reasons, sources_checked = [], sources_failed = [], sources_nodata = []) => {
+    return { url: url || "", risk, score, reasons, sources_checked, sources_failed, sources_nodata };
 };
 
 async function fetchWithTimeout(resource, options = {}) {
@@ -25,7 +29,7 @@ export default async function handler(req, res) {
         return res.status(405).json(createResponse("", "error", 0, ["Metode HTTP tidak diizinkan. Gunakan POST."]));
     }
 
-    let { url } = req.body;
+    let { url } = req.body || {};
     if (!url || typeof url !== 'string') {
         return res.status(400).json(createResponse("", "error", 0, ["Input URL kosong atau format tidak valid."]));
     }
@@ -60,6 +64,7 @@ export default async function handler(req, res) {
     let reasons = [];
     let sources_checked = [];
     let sources_failed = [];
+    let sources_nodata = [];
 
     // --- SUMBER 1: Google Safe Browsing ---
     const sbKey = process.env.SAFE_BROWSING_KEY;
@@ -94,7 +99,7 @@ export default async function handler(req, res) {
                 score += 60;
                 reasons.push("Terdeteksi oleh Google Safe Browsing");
             } else {
-                reasons.push("Safe Browsing: URL bersih.");
+                reasons.push("Safe Browsing: URL tidak ada di daftar ancaman.");
             }
         } catch (error) {
             sources_failed.push("Safe Browsing");
@@ -109,7 +114,8 @@ export default async function handler(req, res) {
         reasons.push("VirusTotal: API Key tidak ditemukan di environment.");
     } else {
         try {
-            const urlId = Buffer.from(url).toString('base64').replace(/=/g, '');
+            // ID URL VirusTotal = base64 URL-safe tanpa padding
+            const urlId = Buffer.from(url).toString('base64url');
             const vtEndpoint = `https://www.virustotal.com/api/v3/urls/${urlId}`;
 
             const response = await fetchWithTimeout(vtEndpoint, {
@@ -120,8 +126,9 @@ export default async function handler(req, res) {
 
             if (response.status === 429) throw new Error("Limit harian VirusTotal tercapai (429).");
             if (response.status === 404) {
-                sources_checked.push("VirusTotal");
-                reasons.push("VirusTotal: URL belum ada di database, dianggap 0 engine.");
+                // URL belum pernah dianalisis: ini BUKAN bukti aman
+                sources_nodata.push("VirusTotal");
+                reasons.push("VirusTotal: URL ini belum pernah dianalisis (belum ada data).");
             } else {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
@@ -154,15 +161,20 @@ export default async function handler(req, res) {
     if (sources_checked.length === 0) {
         riskLevel = "tidak_diketahui";
         score = 0;
-        reasons.push("Tidak ada sumber yang berhasil diperiksa saat ini, coba lagi nanti");
+        reasons.push("Tidak ada sumber yang berhasil memberi data saat ini, coba lagi nanti");
     } else {
         if (sources_failed.length > 0) {
             reasons.push("Sebagian sumber tidak bisa diperiksa, hasil ini belum lengkap");
         }
 
         if (score <= 19) {
-            riskLevel = "aman";
-            reasons.push("Tidak ditemukan ancaman dari sumber yang diperiksa, tetap waspada");
+            if (sources_nodata.length > 0) {
+                riskLevel = "tidak_diketahui";
+                reasons.push("Belum ada data keamanan yang cukup untuk link ini (bisa jadi link baru). Jangan dianggap aman.");
+            } else {
+                riskLevel = "aman";
+                reasons.push("Tidak ditemukan ancaman dari sumber yang diperiksa, tetap waspada");
+            }
         } else if (score <= 59) {
             riskLevel = "waspada";
         } else {
@@ -171,6 +183,6 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json(
-        createResponse(url, riskLevel, score, reasons, sources_checked, sources_failed)
+        createResponse(url, riskLevel, score, reasons, sources_checked, sources_failed, sources_nodata)
     );
 }
