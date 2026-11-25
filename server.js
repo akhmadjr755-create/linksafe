@@ -56,24 +56,36 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. Handle File Statis (HTML, CSS, JS)
-    let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    // Arahkan ke folder UI_UX + assets untuk file statis
+    const uiPath = path.join(__dirname, 'UI_UX');
+    const assetsPath = path.join(__dirname, 'assets');
+    const reqUrl = req.url === '/' ? '/index.html' : req.url;
     
-    // Keamanan dasar: pastikan path tidak keluar dari folder proyek
-    if (!filePath.startsWith(__dirname)) {
-        res.writeHead(403);
-        return res.end("Akses dilarang");
+    let filePath;
+    if (reqUrl.startsWith('/assets/')) {
+        filePath = path.join(__dirname, reqUrl);
+        if (!filePath.startsWith(assetsPath)) {
+            res.writeHead(403);
+            return res.end("Akses dilarang");
+        }
+    } else {
+        filePath = path.join(uiPath, reqUrl);
+        if (!filePath.startsWith(uiPath)) {
+            res.writeHead(403);
+            return res.end("Akses dilarang");
+        }
     }
-
+    
     fs.readFile(filePath, (err, data) => {
         if (err) {
             res.writeHead(404);
             res.end("File tidak ditemukan");
         } else {
             const ext = path.extname(filePath);
-            const mimeTypes = { 
-                '.html': 'text/html', 
-                '.js': 'text/javascript', 
+            const mimeTypes = {
+                '.html': 'text/html',
+                '.js': 'text/javascript',
+                '.mjs': 'text/javascript',
                 '.css': 'text/css',
                 '.png': 'image/png',
                 '.jpg': 'image/jpeg',
@@ -83,6 +95,9 @@ const server = http.createServer(async (req, res) => {
             res.end(data);
         }
     });
+    
+
+
 });
 
 const PORT = 3000;

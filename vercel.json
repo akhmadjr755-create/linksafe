@@ -1,5 +1,13 @@
 {
-  "rewrites": [
-    { "source": "/api/scan", "destination": "/api/scan.js" }
+  "version": 2,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "UI_UX/**", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/scan", "dest": "/api/scan.js" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*)", "dest": "/UI_UX/$1" }
   ]
 }
